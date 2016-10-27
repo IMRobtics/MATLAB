@@ -1,0 +1,104 @@
+[System]
+Name='FuzzyCoperativeController_Mod(18-10-2015)'
+Type='sugeno'
+Version=2.0
+NumInputs=6
+NumOutputs=2
+NumRules=11
+AndMethod='prod'
+OrMethod='probor'
+ImpMethod='prod'
+AggMethod='sum'
+DefuzzMethod='wtaver'
+
+[Input1]
+Name='Drp'
+Range=[0 1]
+NumMFs=5
+MF1='Close':'trimf',[0.00661375661375657 0.1 0.181]
+MF2='Medium':'trimf',[0.1 0.19 0.26]
+MF3='Far':'trimf',[0.186507936507936 0.34 0.44]
+MF4='VeryClose':'trapmf',[0 0 0 0.0992063492063491]
+MF5='VeryFar':'trapmf',[0.4 0.6 1 1]
+
+[Input2]
+Name='Xerr'
+Range=[-2 2]
+NumMFs=2
+MF1='Negative':'trimf',[-2 -2 0]
+MF2='Positive':'trapmf',[0 0 2 2]
+
+[Input3]
+Name='Yerr'
+Range=[-3 3]
+NumMFs=7
+MF1='nFar':'trimf',[-2.25 -1.4 -0.6]
+MF2='nClose':'trimf',[-0.7 -0.5 0]
+MF3='VeryClose':'trimf',[-0.1 0 0.1]
+MF4='Close':'trimf',[0 0.5 0.7]
+MF5='Far':'trimf',[0.6 1.4 2.25]
+MF6='nVeryFar':'trapmf',[-3 -3 -2 -1.8]
+MF7='VeryFar':'trapmf',[1.8 2 3 3]
+
+[Input4]
+Name='Alpha'
+Range=[-180 180]
+NumMFs=5
+MF1='mNeg':'trimf',[-100 -10 0]
+MF2='Small':'trimf',[-10 0 10]
+MF3='mPos':'trimf',[0 10 100]
+MF4='BigNegative':'trapmf',[-180 -180 -100 -50]
+MF5='BigPositive':'trapmf',[50 100 180 180]
+
+[Input5]
+Name='L'
+Range=[0 0.1]
+NumMFs=5
+MF1='Slow':'trimf',[0.005 0.01 0.015]
+MF2='Medium':'trimf',[0.01 0.019 0.027]
+MF3='Fast':'trimf',[0.022 0.034 0.044]
+MF4='VerSlow':'trimf',[0 0 0.01]
+MF5='VeryFast':'trapmf',[0.04 0.06 0.1 0.1]
+
+[Input6]
+Name='Si'
+Range=[0 1]
+NumMFs=3
+MF1='mf1':'trimf',[-0.4 0 0.4]
+MF2='mf2':'trimf',[0.1 0.5 0.9]
+MF3='mf3':'trimf',[0.6 1 1.4]
+
+[Output1]
+Name='V'
+Range=[0 1]
+NumMFs=7
+MF1='VeryVeryFast':'constant',[0.49]
+MF2='VeryFast':'constant',[0.455]
+MF3='Fast':'constant',[0.42]
+MF4='Slow':'constant',[0.21]
+MF5='VerySlow':'constant',[0.14]
+MF6='VeryVerySlow':'constant',[0.07]
+MF7='Zero':'constant',[0]
+
+[Output2]
+Name='W'
+Range=[0 1]
+NumMFs=5
+MF1='BigNegative':'constant',[-1]
+MF2='Neg':'constant',[-0.5]
+MF3='Zero':'constant',[0]
+MF4='Pos':'constant',[0.5]
+MF5='BigPositive':'constant',[1]
+
+[Rules]
+4 2 0 0 0 0, 6 3 (1) : 1
+1 2 0 0 0 0, 5 3 (1) : 1
+2 2 0 0 0 0, 4 3 (1) : 1
+3 2 0 0 0 0, 3 3 (1) : 1
+5 2 0 0 0 0, 2 3 (1) : 1
+0 2 0 4 0 0, 6 1 (1) : 1
+0 2 0 1 0 0, 6 2 (1) : 1
+0 2 0 2 0 0, 6 3 (1) : 1
+0 2 0 3 0 0, 6 4 (1) : 1
+0 2 0 5 0 0, 6 5 (1) : 1
+0 1 0 0 0 0, 7 3 (1) : 1
