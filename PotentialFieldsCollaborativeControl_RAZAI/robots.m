@@ -5,7 +5,7 @@ robotX = [-8 8];
 robotY = [-8 8];
 
 % Generate Random Start Points for Robots
-numberOfRobots=12;
+numberOfRobots=7;
 robot=[ randi(robotX,numberOfRobots,1) ...
         randi(robotY,numberOfRobots,1)]
 
@@ -175,6 +175,7 @@ while WayPoint<(length(trajectory)-1)
             addpoints(robotTrajectory(i),x_pos_new,y_pos_new);
             addpoints(VirtualTrajectory,VirtualBot(1,1),VirtualBot(1,2));
         end
+            drawnow
     end
     
    
