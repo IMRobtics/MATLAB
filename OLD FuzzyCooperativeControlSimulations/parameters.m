@@ -11,7 +11,7 @@ FuzzyCoperativeController = readfis('FuzzyCoperativeController_Mod(18-10-2015)')
 
 % Experiment#: 1 = Different Paths, 2 = Same Paths 
 Experiment = 2;
-Tstop = 100;
+Tstop = 210;
 
 %DC Motor Parameters
 
