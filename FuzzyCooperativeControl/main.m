@@ -1,28 +1,14 @@
 clc; clear all; close all; color = 'kbgrcmy'; colorVal=0;
 
-turns = 1;
-x = -1*pi*turns : 0.25  : pi*turns;
-r = 0 : 1/(length(x)-1) : 1;
+numberOfRobots = 3;
 
-X = sin(x).*r*2;
-Y = cos(x).*r*2;
-x_g = transpose(X);
-y_g = transpose(Y);
-x_g=x_g(5:length(x_g)-5);
-y_g=y_g(5:length(y_g)-5);
-
-numberOfRobots   = 2;
-trajectoryOffset = 1.35;
-trajectory       = zeros(17,2);
-for i=1:numberOfRobots
-    trajectory   = [trajectory x_g+((i-1)*trajectoryOffset) y_g+((i-1)*trajectoryOffset)];
-end
-trajectory=trajectory(:,3:(numberOfRobots*2+2));
+trajectory = generateTrajectory(numberOfRobots);
 
 figure;
 hold on; grid on;
 axis([-2 4 -1 4]);
 axis square; axis equal;
+
 for i=1:2:numberOfRobots*2
    colorVal = colorVal+1;
    if(colorVal>7)
@@ -48,12 +34,15 @@ dt=0.05;   % 50ms
 maxVel=2*pi;
 v = maxVel;
 
-xyz    =zeros(numberOfRobots,3);
-eAngle =zeros(numberOfRobots,3);
-pose   =zeros(numberOfRobots,3);
+xyz    = zeros(numberOfRobots,3);
+eAngle = zeros(numberOfRobots,3);
+pose   = zeros(numberOfRobots,3);
 
 vLeft  = zeros(1,numberOfRobots);
 vRight = zeros(1,numberOfRobots);
+
+pause
+return
 
 %=================================================
 vrep=remApi('remoteApi');
