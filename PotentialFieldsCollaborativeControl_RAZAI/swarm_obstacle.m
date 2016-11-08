@@ -1,24 +1,23 @@
 clc; clear all; close all; color = 'kbgrcmy'; colorVal=1;
 
-% Min Max of the robots start position
-robotX = [-6 6];
-robotY = [-6 6];
-
 % Generate Random Start Points for Robots
 numberOfRobots=4;
-robot=[ ([-3,3])
-         ([1,1])
-         ([5,2])
-         ([5,5])];
+%robot=cell(1,numberOfRobots+1);
 
-   
-% load figure and set axis
+% robot=[ randi(robotX) ...
+%         randi(robotY)]
+     
+ robot=[ ([-5,5])
+         ([6,6])
+         ([5,4])
+         ([5,5])];
+     
 figure; hold on; grid on;
-axis([-6 6 -6 6]); axis square; axis tight
+axis([-6 6 -6 6]); axis square;
 
 for i=1:numberOfRobots
     circle(robot(i,1),robot(i,2),0.2);
-end;
+end
 
 % Create Animated Line Objects for Each robot, different colors
 robotTrajectory = [animatedline('Color',color(colorVal),'LineWidth',2)];
@@ -30,14 +29,28 @@ for i = 1: numberOfRobots-1
    robotTrajectory = [robotTrajectory;animatedline('Color',color(colorVal),'LineWidth',2)];
 end
 
-%Robot/Algorithm related constants
-% M=1; 
-% B=1;
-% kd=9;
-% ksk=1;
-% kr=0.15;
-% alpha=2;
-% qk=2.5;
+x0 = 1;
+y0 = 1;
+v1=2; v2=2;
+
+%Draw a rectangle
+rectangle('Position',[x0-v1 y0-v2 v1*2 v2*2]);%,'FaceColor',[1 0 0]);
+
+A=sqrt(1/(2*((v1)^2)));
+B=sqrt(1/(2*((v2)^2)));
+
+ra = 1.7;
+rk = zeros(numberOfRobots,1);
+
+fxkdes = zeros(numberOfRobots,1);
+fykdes = zeros(numberOfRobots,1);
+
+% for figure 4
+fxkdes = [8;8];
+fykdes = [8;8];
+
+fxkOA = zeros(numberOfRobots,1);
+fykOA = zeros(numberOfRobots,1);
 
 M=1;
 B=1;
@@ -46,7 +59,6 @@ ksk=1;
 kr=0.15;
 alpha=3;
 qk=10;
-
 %Charges on each robot
 q(1:numberOfRobots)=qk;
 %Mass of each robot
@@ -55,26 +67,24 @@ m(1:numberOfRobots)=M;
 %K=10;
 
 % Force Threshold, robots stop moving if force < threshold
-FORCE_THRESHOLD = 1
+FORCE_THRESHOLD = 0.01
 FORCE_MAX = 100
 
 xdot = zeros(numberOfRobots,1);
 ydot = zeros(numberOfRobots,1);
 
-% Load Trajectory for Virtual Leader bot
-load('trajectory.mat')
+psi = zeros(numberOfRobots,1);
+chi = zeros(numberOfRobots,1);
 
+rktest=0;
+numtest=0;
+%Main LOOP
+t = 0;
+%while WayPoint<(length(trajectory)-1)
 % Load First Trajectory point and Draw Circle Around it
-VirtualBot=[0,0];
+VirtualBot=[-0,-5];
 circle(VirtualBot(1,1),VirtualBot(1,2),alpha);
 VirtualTrajectory = animatedline('Color','r','LineWidth',2,'LineStyle','-.')
-
-% Draw a border around the robots
-% border(robot(:,1),robot(:,2));
-
-%Draw a rectangle
-%rectangle('Position',[12 12 6 6]);%,'FaceColor',[1 0 0]);
-
 Fxk_dist = zeros(numberOfRobots,numberOfRobots);
 Fxk = zeros(1,numberOfRobots);
 Attractive_Force_x = zeros(1,numberOfRobots);
@@ -89,11 +99,11 @@ force=[0 0];
 rate=[0 0];
 %Main LOOP
 WayPoint = 1;
-while WayPoint<(length(trajectory)-1)
-    WayPoint = WayPoint+5
-    VirtualBot=trajectory(WayPoint,:);
-    % Vector keep track of how many robots still moving
-    % If all go to ZERO, Virtual Bot moves to NEXT WayPoint
+%while WayPoint<(length(trajectory)-1)
+
+while WayPoint<3
+    WayPoint = WayPoint+1
+    % VirtualBot=trajectory(WayPoint,:);
     movement = ones(numberOfRobots,1);
     
     iterations = 0; % Variable to track iterations in each inner loop
@@ -170,14 +180,61 @@ while WayPoint<(length(trajectory)-1)
             end
         end
         
+        
+        
+        
+        
+        
         for i=1:numberOfRobots
+
+            
+        xk = robot(i,1);
+        yk = robot(i,2);
+        
+        rk(i)=sqrt(((A^2*(xk-x0)^2+B^2*(yk-y0)^2-1)))
+        if(i==1)
+            rktest = [rktest;rk(i)];
+        end
+
+            psi(i)=atan2(ydot(i),xdot(i));
+            chi(i)=atan2(y0-yk,x0-xk);
+
+            if(mod(psi(i)-chi(i),2*pi)<=pi)            
+                fxkrc  =  (B/A)*(yk-y0);
+                fykrc  = -(A/B)*(xk-x0);            
+                fxkr = fxkrc;
+                fykr = fykrc;
+            else
+                fxkrcc = -(B/A)*(yk-y0);
+                fykrcc =  (A/B)*(xk-x0);
+                fxkr = fxkrcc;
+                fykr = fykrcc;
+            end
+            
+            fxkrn = fxkr/norm([fxkr;fykr]);
+            fykrn = fykr/norm([fxkr;fykr]);
+
+            
+                  
             x_pos_new = robot(i,1);
             y_pos_new = robot(i,2);
             
+            
+        if(rk(i)<=ra)
+%             display("nOW stopped")
+            FxkVS(i) = FxkVS(i) + ((g(FxkVS(i),FykVS(i))*fxkrn)/rk(i)^2)*((1/rk(i))-(1/ra));
+            FykVS(i) = FykVS(i) + ((g(FxkVS(i),FykVS(i))*fykrn)/rk(i)^2)*((1/rk(i))-(1/ra));
+        else
+            FxkVS(i) = FxkVS(i);
+            FykVS(i) = FykVS(i);
+        end
+            
+            
+            
             if(abs(FxkVS(i))>FORCE_THRESHOLD)
-%                 if(abs(FxkVS(i))>FORCE_MAX)
-%                     FxkVS(i)=(FxkVS(i)/abs(FxkVS(i)))*FORCE_MAX;
-%                 end
+                if(abs(FxkVS(i))>FORCE_MAX)
+                    FxkVS(i)=(FxkVS(i)/abs(FxkVS(i)))*FORCE_MAX;
+                end
                 fx = @(t,x) [x(2); (FxkVS(i)-(B+kd)*x(2))/M];
                 [T,X]=ode45(fx,[0,0.05],[robot(i,1);xdot(i)]);
                 [m,z] = size(X);
@@ -186,9 +243,9 @@ while WayPoint<(length(trajectory)-1)
             end
             
             if(abs(FykVS(i))>FORCE_THRESHOLD)
-%                 if(abs(FykVS(i))>FORCE_MAX)
-%                     FykVS(i)=(FykVS(i)/abs(FykVS(i)))*FORCE_MAX;
-%                 end
+                if(abs(FykVS(i))>FORCE_MAX)
+                    FykVS(i)=(FykVS(i)/abs(FykVS(i)))*FORCE_MAX;
+                end
                 fy = @(t,y) [y(2); (FykVS(i)-(B+kd)*y(2))/M];
                 [T,Y]=ode45(fy,[0,0.05],[robot(i,2);ydot(i)]);
                 [m,z] = size(Y);
@@ -208,22 +265,11 @@ while WayPoint<(length(trajectory)-1)
             robot(i,:)=[x_pos_new y_pos_new];
             addpoints(robotTrajectory(i),x_pos_new,y_pos_new);
             addpoints(VirtualTrajectory,VirtualBot(1,1),VirtualBot(1,2));
-            drawnow
+            pause
         end
-    end
-    
-    if(mod(WayPoint-1,20)==0)
-        border(robot(:,1),robot(:,2));
-        circle(VirtualBot(1,1),VirtualBot(1,2),alpha);
-        drawnow
     end
 end
 for i=1:numberOfRobots
     circle(robot(i,1),robot(i,2),0.2);
-end
-
-border(robot(:,1),robot(:,2));
-% figure
-% plot(force)
-% figure
-% plot(rate)
+end        
+        

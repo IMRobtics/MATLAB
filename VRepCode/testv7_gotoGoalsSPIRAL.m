@@ -10,8 +10,8 @@ else
     disp('Failed connecting to remote API server');
 end
 
-turns=5; %The number of turns the spiral will have
-x=[-1*pi*turns : 0.125: pi*turns];
+turns=3; %The number of turns the spiral will have
+x=[-1*pi*turns : 1: pi*turns];
 r=[0:1/(length(x)-1):1];
 
 X=sin(x).*r*2;  Y=cos(x).*r*2;
@@ -20,7 +20,7 @@ axis square
 
 x_g = X;
 y_g = Y;
-point = 5;
+point = 2;
 Kp = 5;
 Ki = 0.01;
 Kd = 0.01;

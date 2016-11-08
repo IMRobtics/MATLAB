@@ -4,19 +4,18 @@ clc; clear all; close all;
 robotX = [-8 8];
 robotY = [-8 8];
 
-number_of_robots=3;
+number_of_robots=1;
 robots=[];
 POSITIONS=zeros(2,number_of_robots);
 robot_Vec=[];
-
 
 %Initial Position of the robots
 robot{1}=randi([-8 8],1,2);
 robot{2}=randi([-8 8],1,2);
 robot{3}=randi([-8 8],1,2);
-robot{4}=[8,-8];
-robot{5}=[2,-8];
-robot{6}=[0,7];
+robot{4}=randi([-8 8],1,2);
+robot{5}=randi([-8 8],1,2);
+robot{6}=randi([-8 8],1,2);
 robot{7}=[-6,-6];
 robot{8}=[0,0];
 robot{number_of_robots+1}=robot{1};

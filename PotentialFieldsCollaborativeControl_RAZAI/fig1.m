@@ -6,19 +6,28 @@ robotY = [-6 6];
 
 % Generate Random Start Points for Robots
 numberOfRobots=4;
-robot=[ ([-3,3])
+%robot=cell(1,numberOfRobots+1);
+
+% robot=[ randi(robotX) ...
+%         randi(robotY)]
+     
+ robot=[ ([-3,3])
          ([1,1])
          ([5,2])
          ([5,5])];
+     
 
-   
+
+%robot{numberOfRobots+1}=robot{1};
+
+    
 % load figure and set axis
 figure; hold on; grid on;
-axis([-6 6 -6 6]); axis square; axis tight
+axis([-6 6 -6 6]); axis square;
 
 for i=1:numberOfRobots
     circle(robot(i,1),robot(i,2),0.2);
-end;
+end
 
 % Create Animated Line Objects for Each robot, different colors
 robotTrajectory = [animatedline('Color',color(colorVal),'LineWidth',2)];
@@ -55,7 +64,7 @@ m(1:numberOfRobots)=M;
 %K=10;
 
 % Force Threshold, robots stop moving if force < threshold
-FORCE_THRESHOLD = 1
+FORCE_THRESHOLD = 0.01
 FORCE_MAX = 100
 
 xdot = zeros(numberOfRobots,1);
@@ -89,9 +98,11 @@ force=[0 0];
 rate=[0 0];
 %Main LOOP
 WayPoint = 1;
-while WayPoint<(length(trajectory)-1)
-    WayPoint = WayPoint+5
-    VirtualBot=trajectory(WayPoint,:);
+%while WayPoint<(length(trajectory)-1)
+while WayPoint<3
+    WayPoint = WayPoint+1
+    % VirtualBot=trajectory(WayPoint,:);
+    VirtualBot=[0,0];
     % Vector keep track of how many robots still moving
     % If all go to ZERO, Virtual Bot moves to NEXT WayPoint
     movement = ones(numberOfRobots,1);
@@ -212,9 +223,9 @@ while WayPoint<(length(trajectory)-1)
         end
     end
     
-    if(mod(WayPoint-1,20)==0)
+    if(mod(WayPoint,10)==0)
         border(robot(:,1),robot(:,2));
-        circle(VirtualBot(1,1),VirtualBot(1,2),alpha);
+%         circle(VirtualBot(1,1),VirtualBot(1,2),alpha);
         drawnow
     end
 end

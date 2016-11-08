@@ -1,6 +1,6 @@
 clc; clear all; close all; color = 'kbgrcmy'; colorVal=0;
 
-numberOfRobots = 3;
+numberOfRobots = 1;
 
 trajectory = generateTrajectory(numberOfRobots);
 
@@ -41,8 +41,6 @@ pose   = zeros(numberOfRobots,3);
 vLeft  = zeros(1,numberOfRobots);
 vRight = zeros(1,numberOfRobots);
 
-pause
-return
 
 %=================================================
 vrep=remApi('remoteApi');
@@ -79,7 +77,7 @@ turnFlag = ones(1,numberOfRobots);
 StraightFlag = zeros(1,numberOfRobots);
 moving = ones(1,numberOfRobots);
 LOOP=0;
-goalVals = [1 3 5; 2 4 6];
+goalVals = [1 3 5; 2 4 6]; % trajectory columns, x1, y1, x2, y2, x3, y3
 while LOOP < length(trajectory)
     LOOP = LOOP+1;
     while sum(moving)>0

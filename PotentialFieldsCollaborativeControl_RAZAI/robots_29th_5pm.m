@@ -6,19 +6,22 @@ robotY = [-6 6];
 
 % Generate Random Start Points for Robots
 numberOfRobots=4;
-robot=[ ([-3,3])
+%robot=cell(1,numberOfRobots+1);
+
+% robot=[ randi(robotX) ...
+%         randi(robotY)]
+     
+ robot=[ ([-3,3])
          ([1,1])
          ([5,2])
          ([5,5])];
 
-   
+%robot{numberOfRobots+1}=robot{1};
+
+    
 % load figure and set axis
 figure; hold on; grid on;
-axis([-6 6 -6 6]); axis square; axis tight
-
-for i=1:numberOfRobots
-    circle(robot(i,1),robot(i,2),0.2);
-end;
+axis([-6 6 -6 6]); axis square; axis equal; axis tight;
 
 % Create Animated Line Objects for Each robot, different colors
 robotTrajectory = [animatedline('Color',color(colorVal),'LineWidth',2)];
@@ -52,7 +55,7 @@ q(1:numberOfRobots)=qk;
 %Mass of each robot
 m(1:numberOfRobots)=M;
 %Electrostatic Constant
-%K=10;
+K=10;
 
 % Force Threshold, robots stop moving if force < threshold
 FORCE_THRESHOLD = 1
@@ -66,11 +69,11 @@ load('trajectory.mat')
 
 % Load First Trajectory point and Draw Circle Around it
 VirtualBot=[0,0];
-circle(VirtualBot(1,1),VirtualBot(1,2),alpha);
+circle(VirtualBot(1,1),VirtualBot(1,2),0.5+alpha);
 VirtualTrajectory = animatedline('Color','r','LineWidth',2,'LineStyle','-.')
 
 % Draw a border around the robots
-% border(robot(:,1),robot(:,2));
+border(robot(:,1),robot(:,2));
 
 %Draw a rectangle
 %rectangle('Position',[12 12 6 6]);%,'FaceColor',[1 0 0]);
@@ -89,9 +92,11 @@ force=[0 0];
 rate=[0 0];
 %Main LOOP
 WayPoint = 1;
-while WayPoint<(length(trajectory)-1)
-    WayPoint = WayPoint+5
-    VirtualBot=trajectory(WayPoint,:);
+%while WayPoint<(length(trajectory)-1)
+while WayPoint<3
+    WayPoint = WayPoint+1
+    % VirtualBot=trajectory(WayPoint,:);
+    VirtualBot=[0,0];
     % Vector keep track of how many robots still moving
     % If all go to ZERO, Virtual Bot moves to NEXT WayPoint
     movement = ones(numberOfRobots,1);
@@ -112,17 +117,14 @@ while WayPoint<(length(trajectory)-1)
         end
         
         %Computing orientation of individual from all other robots
-        thetaX=zeros(numberOfRobots,numberOfRobots);
-        thetaY=zeros(numberOfRobots,numberOfRobots);
+        theta=zeros(numberOfRobots,numberOfRobots);
         for i=1:numberOfRobots
             for j=1:numberOfRobots
                 if i==j
-                    thetaX(i,j)=0;thetaY(i,j)=0;
+                    theta(i,j)=0;
                 elseif i~=j
                     a=robot(i,:)-robot(j,:);
-                    thetaX(i,j)=a(1)/abs(r(i,j));
-                    thetaY(i,j)=a(2)/abs(r(i,j));
-                    %theta(i,j)=atan2(a(2),a(1));
+                    theta(i,j)=atan2(a(2),a(1));
                 end
             end
         end
@@ -135,7 +137,7 @@ while WayPoint<(length(trajectory)-1)
                 if i==j
                     Electrostatic_Forces(i,j)=0;
                 elseif i~=j
-                    Electrostatic_Forces(i,j)=(kr*q(i)*q(j))/(r(i,j)^2);
+                    Electrostatic_Forces(i,j)=(K*q(i)*q(j))/(r(i,j)^2);
                 end
             end
         end
@@ -143,8 +145,8 @@ while WayPoint<(length(trajectory)-1)
         %Decomposition of Electrostatic forces in x and y components
         for i=1:numberOfRobots
             for j=1:numberOfRobots
-                Fxk_dist(i,j)=Electrostatic_Forces(i,j)*thetaX(i,j);
-                Fyk_dist(i,j)=Electrostatic_Forces(i,j)*thetaY(i,j);
+                Fxk_dist(i,j)=Electrostatic_Forces(i,j)*cos(theta(i,j));
+                Fyk_dist(i,j)=Electrostatic_Forces(i,j)*sin(theta(i,j));
             end
         end
         
@@ -175,9 +177,9 @@ while WayPoint<(length(trajectory)-1)
             y_pos_new = robot(i,2);
             
             if(abs(FxkVS(i))>FORCE_THRESHOLD)
-%                 if(abs(FxkVS(i))>FORCE_MAX)
-%                     FxkVS(i)=(FxkVS(i)/abs(FxkVS(i)))*FORCE_MAX;
-%                 end
+                if(abs(FxkVS(i))>FORCE_MAX)
+                    FxkVS(i)=(FxkVS(i)/abs(FxkVS(i)))*FORCE_MAX;
+                end
                 fx = @(t,x) [x(2); (FxkVS(i)-(B+kd)*x(2))/M];
                 [T,X]=ode45(fx,[0,0.05],[robot(i,1);xdot(i)]);
                 [m,z] = size(X);
@@ -186,9 +188,9 @@ while WayPoint<(length(trajectory)-1)
             end
             
             if(abs(FykVS(i))>FORCE_THRESHOLD)
-%                 if(abs(FykVS(i))>FORCE_MAX)
-%                     FykVS(i)=(FykVS(i)/abs(FykVS(i)))*FORCE_MAX;
-%                 end
+                if(abs(FykVS(i))>FORCE_MAX)
+                    FykVS(i)=(FykVS(i)/abs(FykVS(i)))*FORCE_MAX;
+                end
                 fy = @(t,y) [y(2); (FykVS(i)-(B+kd)*y(2))/M];
                 [T,Y]=ode45(fy,[0,0.05],[robot(i,2);ydot(i)]);
                 [m,z] = size(Y);
@@ -212,18 +214,13 @@ while WayPoint<(length(trajectory)-1)
         end
     end
     
-    if(mod(WayPoint-1,20)==0)
+    if(mod(WayPoint,10)==0)
         border(robot(:,1),robot(:,2));
-        circle(VirtualBot(1,1),VirtualBot(1,2),alpha);
+%         circle(VirtualBot(1,1),VirtualBot(1,2),alpha);
         drawnow
     end
 end
-for i=1:numberOfRobots
-    circle(robot(i,1),robot(i,2),0.2);
-end
-
-border(robot(:,1),robot(:,2));
-% figure
-% plot(force)
-% figure
-% plot(rate)
+figure
+plot(force)
+figure
+plot(rate)
