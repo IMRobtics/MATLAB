@@ -45,26 +45,28 @@ Virtual_robotTrajectory_ZP = [animatedline('Color',color(7),'LineWidth',2)];
 %as according to matlab rectangle command)
 %(x0,y0) is the centre of the obstacle %the ellipse envelops a rectangle with 
 %(x0+-v1,y0+-v2) as its vertices
-origin_of_rectangle=[-.75,-.75]; width=1.5; height=1.5; 
+origin_of_rectangle=[17,18]; width=6; height=4; 
 
 figure(1); %To view Simulation
 rectangle('Position',[origin_of_rectangle width height],'Curvature',[0.05 0.05]),...
 axis square,hold on
-axis ([-5 5 -5 5]) %The simulation window comprises of -5,-5 to 5,5
+axis([8 35 8 35]); axis square;
 xa=origin_of_rectangle(1); ya=origin_of_rectangle(2);
 
 v1=width/2; v2=height/2;%sides
-x0=xa+width/2; y0=ya+height/2; %Center of the obstacle
+x0=xa+width/2;
+y0=ya+height/2; %Center of the obstacle
 
-x=-20:0.1:40; %Plotting the ellipse encircling the obstacle %defining range for x
-A=sqrt(1/(2*(v1^2))); B=sqrt(1/(2*(v2^2))); %AB and (AB)^2 should be maximum%
-
-y1=real(sqrt((1-A^2*(x-x0).^2)/B^2)+y0); y2=real(-sqrt((1-A^2*(x-x0).^2)/B^2)+y0);
+x=15:0.1:30; %Plotting the ellipse encircling the obstacle %defining range for x
+A=sqrt(1/(2*(v1^2)));
+B=sqrt(1/(2*(v2^2))); %AB and (AB)^2 should be maximum%
+y1=real(sqrt((1-A^2*(x-x0).^2)/B^2)+y0);
+y2=real(-sqrt((1-A^2*(x-x0).^2)/B^2)+y0);
 plot(x,y1,'g',x,y2,'g'),axis square,grid on,hold on
 
 v1_expansion=v1:v1/10:v1*1.5; %Defining ellipses around the obstacles
 A1=sqrt(1./(2*(v1_expansion.^2))); B1=(B/A)*A1;
-
+return
 %concentric elliptical lines
 for i=1:length(B1)
     y1=real(sqrt((1-A1(i)^2*(x-x0).^2)/B1(i)^2)+y0); y2=real(-sqrt((1-A1(i)^2*(x-x0).^2)/B1(i)^2)+y0); 

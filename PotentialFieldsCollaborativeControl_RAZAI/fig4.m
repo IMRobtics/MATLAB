@@ -13,7 +13,8 @@ numberOfRobots=2;
  robotTminus2 = robot;
  
 figure; hold on; grid on;
-axis([9 35 9 35]); axis square;
+% axis([8 35 8 35]); axis square;
+axis([15 25 17 25]); axis square;
 
 for i=1:numberOfRobots
     circle(robot(i,1),robot(i,2),0.2);
@@ -37,11 +38,21 @@ rectHeight=v2*2;
 
 %Draw a rectangle
 rectangle('Position',[x0-v1 y0-v2 rectWidth rectHeight]);%,'FaceColor',[1 0 0]);
+% ellipse(x0,y0,3,2);
+% ellipse(x0,y0,6,4);
+
+A=sqrt(1/(2*((v1)^2))); %ZP v1 and v2 are interchanged
+B=sqrt(1/(2*((v2)^2)));
+
+% ellipse(x0,y0,A*2,B*2);
+ellipse(x0,y0,1/A,1/B);
+% ellipse(x0,y0,1/(2*v1^2),1/(2*v2^2));
+
+return
+
 % rectangle('Position',[x0-v1 y0-v2 rectWidth rectHeight], 'Curvature',[1 1]);%,'FaceColor',[1 0 0]);
 mult=1/25;
 v1=3*mult; v2=2*mult;
-A=sqrt(1/(2*((v2)^2))); %ZP v1 and v2 are interchanged
-B=sqrt(1/(2*((v1)^2)));
 rectangle('Position',[x0-A/2 y0-B/2 A B], 'Curvature',[1 1]);%,'FaceColor',[1 0 0]);
 % ellipse(x0,y0,A,B);
 %  ?? Try and make ellipse on the rectangle
