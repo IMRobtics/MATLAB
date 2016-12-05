@@ -1,7 +1,8 @@
 clc; clear all; close all;
 
 number_of_robots=3; %Initialization of parameters
-M=0.1; B_model=0.1; kd=2; ksk=1; kr=0.15; alpha=3; kp=10; tau=50; fxvdes=1.5; fyvdes=1.5; ra=ones(1:number_of_robots); tspan_ode45=[0.0 0.1];
+M=0.1; B_model=0.1; kd=2; ksk=1; kr=0.15; alpha=3; kp=10; tau=50;
+fxvdes=1.5; fyvdes=1.5; ra=ones(1:number_of_robots); tspan_ode45=[0.0 0.1];
 %M=1; B_model=1; kd=9; ksk=100; kr=10; radius kp=10; tau=4; fxvdes=8; fyvdes=8; ra=ones(1:number_of_robots); tspan_ode45=[0.0 0.009];
 
 q(1:number_of_robots)=4; %Charges on each robot
@@ -9,11 +10,14 @@ SWARM_FLAG=0; %Initially SWARM_FLAG=ZERO because the robots are not in a swarm f
 Chi=zeros(1,number_of_robots); Psi=zeros(1,number_of_robots); %Angles for obstacle avoidance
 
 %Forces on robots when using behavioural structure with swarm formation
-fxkVS_rk_ra=zeros(1,number_of_robots); fykVS_rk_ra=zeros(1,number_of_robots); fkVS_rk_ra=zeros(1,number_of_robots); 
+fxkVS_rk_ra=zeros(1,number_of_robots);
+fykVS_rk_ra=zeros(1,number_of_robots);
+fkVS_rk_ra=zeros(1,number_of_robots); 
 FLAG=zeros(1,number_of_robots);
 
 robot=cell(1,number_of_robots); %Initialization of robots
-robot{1}=[-1,-5]; robot{2}=[-3.2,-5.2]; robot{3}=[0,-3]; robot{4}=[0.5,0.1]; robot{5}=[0.1,-0.1]; robot{6}=[0.10,0.6]; %Initial Position of the robots
+robot{1}=[-1,-5];   robot{2}=[-3.2,-5.2]; robot{3}=[0,-3];
+robot{4}=[0.5,0.1]; robot{5}=[0.1,-0.1];  robot{6}=[0.10,0.6];%Initial Position of the robots
 hyp_robot=[-5,-5]; %position of the hypothetical (Virtual Leader) Robot
 
 xdot = zeros(number_of_robots,1); ydot = zeros(number_of_robots,1); %new position of ith robot%
@@ -36,8 +40,10 @@ for i = 1: number_of_robots-1
 end
 
 Virtual_robotTrajectory_ZP = [animatedline('Color',color(7),'LineWidth',2)];
-%Developing the Obstacle %Drawing ellipses arouond the obstacle %xa, ya is the origin of the rectangle (bottom left corner 
-%as according to matlab rectangle command) %(x0,y0) is the centre of the obstacle %the ellipse envelops a rectangle with 
+%Developing the Obstacle %Drawing ellipses arouond the obstacle
+%xa, ya is the origin of the rectangle (bottom left corner 
+%as according to matlab rectangle command)
+%(x0,y0) is the centre of the obstacle %the ellipse envelops a rectangle with 
 %(x0+-v1,y0+-v2) as its vertices
 origin_of_rectangle=[-.75,-.75]; width=1.5; height=1.5; 
 

@@ -32,14 +32,19 @@ end
 x0 = 20;
 y0 = 20;
 v1=3; v2=2;
+rectWidth =v1*2;
+rectHeight=v2*2;
 
 %Draw a rectangle
-rectangle('Position',[x0-v1 y0-v2 v1*2 v2*2]);%,'FaceColor',[1 0 0]);
-
-A=sqrt(1/(2*((v1)^2)));
-B=sqrt(1/(2*((v2)^2)));
+rectangle('Position',[x0-v1 y0-v2 rectWidth rectHeight]);%,'FaceColor',[1 0 0]);
+% rectangle('Position',[x0-v1 y0-v2 rectWidth rectHeight], 'Curvature',[1 1]);%,'FaceColor',[1 0 0]);
+mult=1/25;
+v1=3*mult; v2=2*mult;
+A=sqrt(1/(2*((v2)^2))); %ZP v1 and v2 are interchanged
+B=sqrt(1/(2*((v1)^2)));
+rectangle('Position',[x0-A/2 y0-B/2 A B], 'Curvature',[1 1]);%,'FaceColor',[1 0 0]);
+% ellipse(x0,y0,A,B);
 %  ?? Try and make ellipse on the rectangle
-
 
 ra = 1; % ZP???
 rk = zeros(numberOfRobots,1);
@@ -55,7 +60,7 @@ fxkOA = zeros(numberOfRobots,1);
 fykOA = zeros(numberOfRobots,1);
 
 M=1;
-B=1;
+Bz=1;
 kd=9;
 
 xdot = zeros(numberOfRobots,1);
@@ -69,7 +74,7 @@ numtest=0;
 %Main LOOP
 t = 0;
 %while WayPoint<(length(trajectory)-1)
-while t<400
+while t<200
     t = t+1;
     for i=1:numberOfRobots
         xk = robot(i,1);
@@ -80,7 +85,7 @@ while t<400
         if(i==1)
             rktest = [rktest;rk(i)];
         end
-        pause
+%         pause
 
             chi(i)=atan2(y0-yk,x0-xk);
             xy_coordinate=(robotTminus1(i,:)-robotTminus2(i,:));
@@ -101,9 +106,7 @@ while t<400
             
             fxkrn = fxkr/norm([fxkr;fykr]);
             fykrn = fykr/norm([fxkr;fykr]);
-                                  
-        
-        
+
         if(rk(i)<=ra)
 %             display("nOW stopped")
 % figure out normalization stuff - confirm G is the way it should be
@@ -121,13 +124,13 @@ while t<400
             numtest = [numtest;fxkOA(i)];
         end
         
-        fx = @(t,x) [x(2); (fxkOA(i)-(B+kd)*x(2))/M];
+        fx = @(t,x) [x(2); (fxkOA(i)-(Bz+kd)*x(2))/M];
         [T,X]=ode45(fx,[0,0.05],[xk;xdot(i)]);
         [m,z] = size(X);
         xk=X(m,1);
         xdot(i)=X(m,2);
 
-        fy = @(t,y) [y(2); (fykOA(i)-(B+kd)*y(2))/M];
+        fy = @(t,y) [y(2); (fykOA(i)-(Bz+kd)*y(2))/M];
         [T,Y]=ode45(fy,[0,0.05],[yk;ydot(i)]);
         [m,z] = size(Y);
         yk=Y(m,1);
@@ -144,8 +147,6 @@ end
 for i=1:numberOfRobots
     circle(robot(i,1),robot(i,2),0.2);
 end
-
-circle(x0,y0,1);
 
 % figure
 % plot(rktest)
