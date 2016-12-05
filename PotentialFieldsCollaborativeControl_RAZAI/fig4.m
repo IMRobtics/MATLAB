@@ -13,8 +13,7 @@ numberOfRobots=2;
  robotTminus2 = robot;
  
 figure; hold on; grid on;
-% axis([8 35 8 35]); axis square;
-axis([15 25 17 25]); axis square;
+axis([8 35 8 35]); axis square;
 
 for i=1:numberOfRobots
     circle(robot(i,1),robot(i,2),0.2);
@@ -30,9 +29,9 @@ for i = 1: numberOfRobots-1
    robotTrajectory = [robotTrajectory;animatedline('Color',color(colorVal),'LineWidth',2)];
 end
 
-x0 = 20;
+x0 = 25;
 y0 = 20;
-v1=3; v2=2;
+v1=1; v2=5;
 rectWidth =v1*2;
 rectHeight=v2*2;
 
@@ -41,23 +40,12 @@ rectangle('Position',[x0-v1 y0-v2 rectWidth rectHeight]);%,'FaceColor',[1 0 0]);
 % ellipse(x0,y0,3,2);
 % ellipse(x0,y0,6,4);
 
-A=sqrt(1/(2*((v1)^2))); %ZP v1 and v2 are interchanged
+A=sqrt(1/(2*((v1)^2)));
 B=sqrt(1/(2*((v2)^2)));
 
-% ellipse(x0,y0,A*2,B*2);
 ellipse(x0,y0,1/A,1/B);
-% ellipse(x0,y0,1/(2*v1^2),1/(2*v2^2));
 
-return
-
-% rectangle('Position',[x0-v1 y0-v2 rectWidth rectHeight], 'Curvature',[1 1]);%,'FaceColor',[1 0 0]);
-mult=1/25;
-v1=3*mult; v2=2*mult;
-rectangle('Position',[x0-A/2 y0-B/2 A B], 'Curvature',[1 1]);%,'FaceColor',[1 0 0]);
-% ellipse(x0,y0,A,B);
-%  ?? Try and make ellipse on the rectangle
-
-ra = 1; % ZP???
+ra = 0.5; % ZP, 1
 rk = zeros(numberOfRobots,1);
 
 fxkdes = zeros(numberOfRobots,1);
@@ -80,61 +68,54 @@ ydot = zeros(numberOfRobots,1);
 psi = zeros(numberOfRobots,1);
 chi = zeros(numberOfRobots,1);
 
-rktest=0;
-numtest=0;
-%Main LOOP
+FORCE_MAX = 100;
+
 t = 0;
 %while WayPoint<(length(trajectory)-1)
-while t<200
+while t<400
     t = t+1;
     for i=1:numberOfRobots
         xk = robot(i,1);
         yk = robot(i,2);
         
-        rk(i)=sqrt(((A^2*(xk-x0)^2+B^2*(yk-y0)^2-1)))
-%        Why is this NOT getting <1 when near outside border of obstacle 
-        if(i==1)
-            rktest = [rktest;rk(i)];
-        end
-%         pause
-
-            chi(i)=atan2(y0-yk,x0-xk);
+        rk(i) =sqrt(((A^2*(xk-x0)^2+B^2*(yk-y0)^2-1)));
+        chi(i)=atan2(y0-yk,x0-xk);
+        
+        if(t>3)
             xy_coordinate=(robotTminus1(i,:)-robotTminus2(i,:));
-            psi(i)=atan2((-A/B).*xy_coordinate(2),(B/A).*xy_coordinate(1));
-%             psi(i)=atan2(ydot(i),xdot(i));
-            
-            if(mod(psi(i)-chi(i),2*pi)<=pi)            
-                fxkrc  =  (B/A)*(yk-y0);
-                fykrc  = -(A/B)*(xk-x0);            
-                fxkr = fxkrc;
-                fykr = fykrc;
-            else
-                fxkrcc = -(B/A)*(yk-y0);
-                fykrcc =  (A/B)*(xk-x0);
-                fxkr = fxkrcc;
-                fykr = fykrcc;
-            end
-            
-            fxkrn = fxkr/norm([fxkr;fykr]);
-            fykrn = fykr/norm([fxkr;fykr]);
+            psi(i)=atan2((-A/B).*xy_coordinate(1),(B/A).*xy_coordinate(2));
+        end
+        
+        if(mod(psi(i)-chi(i),2*pi)<=pi)            
+            fxkrc  =  (B/A)*(yk-y0);
+            fykrc  = -(A/B)*(xk-x0);            
+            fxkr   = fxkrc;
+            fykr   = fykrc;
+        else
+            fxkrcc = -(B/A)*(yk-y0);
+            fykrcc =  (A/B)*(xk-x0);
+            fxkr   = fxkrcc;
+            fykr   = fykrcc;
+        end
+
+        fxkrn = fxkr/norm([fxkr;fykr]);
+        fykrn = fykr/norm([fxkr;fykr]);
 
         if(rk(i)<=ra)
-%             display("nOW stopped")
-% figure out normalization stuff - confirm G is the way it should be
             fxkOA(i) = fxkdes(i) + ((g(fxkdes(i),fykdes(i))*fxkrn)/rk(i)^2)*((1/rk(i))-(1/ra));
             fykOA(i) = fykdes(i) + ((g(fxkdes(i),fykdes(i))*fykrn)/rk(i)^2)*((1/rk(i))-(1/ra));
-            % Why the second term becomes BIG only after getting too close
-            % to the obstacle center.
         else
             fxkOA(i) = fxkdes(i);
             fykOA(i) = fykdes(i);
         end
-    
         
-        if(i==1)
-            numtest = [numtest;fxkOA(i)];
+        if(abs(fxkOA(i))>FORCE_MAX)
+            fxkOA(i)=(fxkOA(i)/abs(fxkOA(i)))*FORCE_MAX;
         end
-        
+        if(abs(fykOA(i))>FORCE_MAX)
+            fykOA(i)=(fykOA(i)/abs(fykOA(i)))*FORCE_MAX;
+        end
+
         fx = @(t,x) [x(2); (fxkOA(i)-(Bz+kd)*x(2))/M];
         [T,X]=ode45(fx,[0,0.05],[xk;xdot(i)]);
         [m,z] = size(X);
@@ -158,8 +139,3 @@ end
 for i=1:numberOfRobots
     circle(robot(i,1),robot(i,2),0.2);
 end
-
-% figure
-% plot(rktest)
-% figure
-% plot(numtest)
