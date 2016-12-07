@@ -15,7 +15,7 @@ numberOfRobots=4;
          ([1,1])
          ([5,2])
          ([5,5])];
-     
+robot = robot.*10;
 
 
 %robot{numberOfRobots+1}=robot{1};
@@ -23,10 +23,10 @@ numberOfRobots=4;
     
 % load figure and set axis
 figure; hold on; grid on;
-axis([-6 6 -6 6]); axis square;
+axis([-60 60 -60 60]); axis square;
 
 for i=1:numberOfRobots
-    circle(robot(i,1),robot(i,2),0.2);
+    circle(robot(i,1),robot(i,2),0.2,2);
 end
 
 % Create Animated Line Objects for Each robot, different colors
@@ -75,7 +75,7 @@ load('trajectory.mat')
 
 % Load First Trajectory point and Draw Circle Around it
 VirtualBot=[0,0];
-circle(VirtualBot(1,1),VirtualBot(1,2),alpha);
+circle(VirtualBot(1,1),VirtualBot(1,2),alpha,3);
 VirtualTrajectory = animatedline('Color','r','LineWidth',2,'LineStyle','-.')
 
 % Draw a border around the robots
@@ -100,6 +100,7 @@ rate=[0 0];
 WayPoint = 1;
 %while WayPoint<(length(trajectory)-1)
 while WayPoint<3
+
     WayPoint = WayPoint+1
     % VirtualBot=trajectory(WayPoint,:);
     VirtualBot=[0,0];
@@ -111,8 +112,7 @@ while WayPoint<3
     
     % Inner Loop
     while sum(movement)>0
-        iterations = iterations+1;
-        
+        iterations = iterations+1;     
         %Computing distance of individual robot from all other robots
         r=zeros(numberOfRobots,numberOfRobots);
         for i=1:numberOfRobots
@@ -186,9 +186,9 @@ while WayPoint<3
             y_pos_new = robot(i,2);
             
             if(abs(FxkVS(i))>FORCE_THRESHOLD)
-%                 if(abs(FxkVS(i))>FORCE_MAX)
-%                     FxkVS(i)=(FxkVS(i)/abs(FxkVS(i)))*FORCE_MAX;
-%                 end
+                if(abs(FxkVS(i))>FORCE_MAX)
+                    FxkVS(i)=(FxkVS(i)/abs(FxkVS(i)))*FORCE_MAX;
+                end
                 fx = @(t,x) [x(2); (FxkVS(i)-(B+kd)*x(2))/M];
                 [T,X]=ode45(fx,[0,0.05],[robot(i,1);xdot(i)]);
                 [m,z] = size(X);
@@ -197,9 +197,9 @@ while WayPoint<3
             end
             
             if(abs(FykVS(i))>FORCE_THRESHOLD)
-%                 if(abs(FykVS(i))>FORCE_MAX)
-%                     FykVS(i)=(FykVS(i)/abs(FykVS(i)))*FORCE_MAX;
-%                 end
+                if(abs(FykVS(i))>FORCE_MAX)
+                    FykVS(i)=(FykVS(i)/abs(FykVS(i)))*FORCE_MAX;
+                end
                 fy = @(t,y) [y(2); (FykVS(i)-(B+kd)*y(2))/M];
                 [T,Y]=ode45(fy,[0,0.05],[robot(i,2);ydot(i)]);
                 [m,z] = size(Y);
@@ -230,7 +230,7 @@ while WayPoint<3
     end
 end
 for i=1:numberOfRobots
-    circle(robot(i,1),robot(i,2),0.2);
+    circle(robot(i,1),robot(i,2),0.2,4);
 end
 
 border(robot(:,1),robot(:,2));
