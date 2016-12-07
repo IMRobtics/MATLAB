@@ -80,9 +80,11 @@ Fyk = zeros(1,numberOfRobots);
 Attractive_Force_y = zeros(1,numberOfRobots);
 FykVS = zeros(1,numberOfRobots);
 
+FORCE_MAX = 100;
+
 t = 0;
 %while WayPoint<(length(trajectory)-1)
-while t<100
+while t<500
     t = t+1;
     %Computing distance of individual robot from all other robots
     r=zeros(numberOfRobots,numberOfRobots);
@@ -147,7 +149,15 @@ while t<100
         FxkVS(i)=Fxk(i)-Attractive_Force_x(i);
         FykVS(i)=Fyk(i)-Attractive_Force_y(i);
     end
-  
+
+    for i=1:numberOfRobots
+        if(abs(FxkVS(i))>FORCE_MAX)
+            FxkVS(i)=(FxkVS(i)/abs(FxkVS(i)))*FORCE_MAX;
+        end
+        if(abs(FykVS(i))>FORCE_MAX)
+            FykVS(i)=(FykVS(i)/abs(FykVS(i)))*FORCE_MAX;
+        end
+    end
     
     for i=1:numberOfRobots
         xk = robot(i,1);
@@ -184,6 +194,13 @@ while t<100
         
         fxkOA(i) = FxkVS(i) + fxkObstacle;
         fykOA(i) = FykVS(i) + fykObstacle;
+        
+        if(abs(fxkOA(i))>FORCE_MAX)
+            fxkOA(i)=(fxkOA(i)/abs(fxkOA(i)))*FORCE_MAX;
+        end
+        if(abs(fykOA(i))>FORCE_MAX)
+            fykOA(i)=(fykOA(i)/abs(fykOA(i)))*FORCE_MAX;
+        end
         
         fx = @(t,x) [x(2); (fxkOA(i)-(Bz+kd)*x(2))/M];
         [T,X]=ode45(fx,[0,0.05],[xk;xdot(i)]);
