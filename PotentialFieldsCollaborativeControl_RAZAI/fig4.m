@@ -92,54 +92,55 @@ while t<300
     for i=1:numberOfRobots
         xk = robot(i,1);
         yk = robot(i,2);
-        
-        chi(i)=atan2(y0-yk,x0-xk);
-        
-%         xkdot =  (B/A)*(yk-y0);
-%         ykdot = -(A/B)*(xk-x0);
-%         psi(i)=atan2(ykdot,xkdot);
-
-%         psi(i) = atan2((-A/B)*(robot(i,2)-robotT1(i,2)),(B/A)*(robot(i,1)-robotT1(i,1)));
-        psi(i) = atan2(robot(i,2)-robotT1(i,2),robot(i,1)-robotT1(i,1));
-
-        zed(1,i) = psi(i);
-        zed(2,i) = chi(i);
-        
-        zed(i) = mod(psi(i)-chi(i),2*pi);
-        if(zed(i)<=pi)
-%         if(psi(i)>=chi(i))
-            fxkrc  =  (B/A)*(yk-y0);
-            fykrc  = -(A/B)*(xk-x0);            
-            fxkr   = fxkrc;
-            fykr   = fykrc;
-        else
-            fxkrcc = -(B/A)*(yk-y0);
-            fykrcc =  (A/B)*(xk-x0);
-            fxkr   = fxkrcc;
-            fykr   = fykrcc;
-        end
-        
-        if(i==4)
-            zed
-        end
-
-%         if(i>2)x
-%             fxkrcc = -(B/A)*(yk-y0);
-%             fykrcc =  (A/B)*(xk-x0);
-%             fxkr   = fxkrcc;
-%             fykr   = fykrcc;
-%         else
-%             fxkrc  =  (B/A)*(yk-y0);
-%             fykrc  = -(A/B)*(xk-x0);            
-%             fxkr   = fxkrc;
-%             fykr   = fykrc;    
-%         end
-        
-        fxkrn = fxkr/norm([fxkr;fykr]);
-        fykrn = fykr/norm([fxkr;fykr]);
-
         rk(i) =sqrt(((A^2*(xk-x0)^2+B^2*(yk-y0)^2-1)));
+
+
         if(rk(i)<=ra)
+
+            chi(i)=atan2(y0-yk,x0-xk);
+
+    %         xkdot =  (B/A)*(yk-y0);
+    %         ykdot = -(A/B)*(xk-x0);
+    %         psi(i)=atan2(ykdot,xkdot);
+
+    %         psi(i) = atan2((-A/B)*(robot(i,2)-robotT1(i,2)),(B/A)*(robot(i,1)-robotT1(i,1)));
+            psi(i) = atan2(robot(i,2)-robotT1(i,2),robot(i,1)-robotT1(i,1));
+
+            zed(1,i) = psi(i);
+            zed(2,i) = chi(i);
+
+            zed(i) = mod(psi(i)-chi(i),2*pi);
+            if(zed(i)<=pi)
+    %         if(psi(i)>=chi(i))
+                fxkrc  =  (B/A)*(yk-y0);
+                fykrc  = -(A/B)*(xk-x0);            
+                fxkr   = fxkrc;
+                fykr   = fykrc;
+            else
+                fxkrcc = -(B/A)*(yk-y0);
+                fykrcc =  (A/B)*(xk-x0);
+                fxkr   = fxkrcc;
+                fykr   = fykrcc;
+            end
+
+            if(i==4)
+                zed
+            end
+
+    %         if(i>2)x
+    %             fxkrcc = -(B/A)*(yk-y0);
+    %             fykrcc =  (A/B)*(xk-x0);
+    %             fxkr   = fxkrcc;
+    %             fykr   = fykrcc;
+    %         else
+    %             fxkrc  =  (B/A)*(yk-y0);
+    %             fykrc  = -(A/B)*(xk-x0);            
+    %             fxkr   = fxkrc;
+    %             fykr   = fykrc;    
+    %         end
+
+            fxkrn = fxkr/norm([fxkr;fykr]);
+            fykrn = fykr/norm([fxkr;fykr]);
             fxkOA(i) = fxkdes(i) + ((g(fxkdes(i),fykdes(i))*fxkrn)/rk(i)^2)*((1/rk(i))-(1/ra));
             fykOA(i) = fykdes(i) + ((g(fxkdes(i),fykdes(i))*fykrn)/rk(i)^2)*((1/rk(i))-(1/ra));
         else
@@ -169,7 +170,10 @@ while t<300
         robotT1(i,:) = robot(i,:);
         robot(i,:)=[xk yk];
         addpoints(robotTrajectory(i),xk,yk);
-        drawnow
+        if(mod(t,50)==0)
+            t;
+            drawnow
+        end
     end
 end
 

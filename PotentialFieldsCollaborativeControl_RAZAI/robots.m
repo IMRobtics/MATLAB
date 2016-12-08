@@ -17,7 +17,7 @@ figure; hold on; grid on;
 axis([-6 6 -6 6]); axis square; axis tight
 
 for i=1:numberOfRobots
-    circle(robot(i,1),robot(i,2),0.2);
+    circle(robot(i,1),robot(i,2),0.2,2);
 end;
 
 % Create Animated Line Objects for Each robot, different colors
@@ -66,7 +66,7 @@ load('trajectory.mat')
 
 % Load First Trajectory point and Draw Circle Around it
 VirtualBot=[0,0];
-circle(VirtualBot(1,1),VirtualBot(1,2),alpha);
+circle(VirtualBot(1,1),VirtualBot(1,2),alpha,2);
 VirtualTrajectory = animatedline('Color','r','LineWidth',2,'LineStyle','-.')
 
 % Draw a border around the robots
@@ -214,12 +214,12 @@ while WayPoint<(length(trajectory)-1)
     
     if(mod(WayPoint-1,20)==0)
         border(robot(:,1),robot(:,2));
-        circle(VirtualBot(1,1),VirtualBot(1,2),alpha);
+        circle(VirtualBot(1,1),VirtualBot(1,2),alpha,2);
         drawnow
     end
 end
 for i=1:numberOfRobots
-    circle(robot(i,1),robot(i,2),0.2);
+    circle(robot(i,1),robot(i,2),0.2,2);
 end
 
 border(robot(:,1),robot(:,2));

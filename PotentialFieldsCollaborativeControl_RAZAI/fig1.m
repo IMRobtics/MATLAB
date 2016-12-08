@@ -15,7 +15,7 @@ numberOfRobots=4;
          ([1,1])
          ([5,2])
          ([5,5])];
-robot = robot.*10;
+robot = robot;
 
 
 %robot{numberOfRobots+1}=robot{1};
@@ -23,7 +23,7 @@ robot = robot.*10;
     
 % load figure and set axis
 figure; hold on; grid on;
-axis([-60 60 -60 60]); axis square;
+axis([-6 6 -6 6]); axis square;
 
 for i=1:numberOfRobots
     circle(robot(i,1),robot(i,2),0.2,2);
