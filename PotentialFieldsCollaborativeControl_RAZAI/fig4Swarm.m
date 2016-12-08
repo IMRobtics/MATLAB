@@ -93,10 +93,11 @@ FORCE_THRESHOLD = 0.5;
 
 
 % Force on Virtual Bot
-fxkdes = 4;
-fykdes = 4;
+fxvdes = 1;
+fyvdes = 1;
 
 Tau = 4;
+kp = 10;
 
 movement = ones(numberOfRobots,1);
 t = 0; zed=0;
@@ -250,7 +251,7 @@ end
 
 obstacleFlag = ones(numberOfRobots,1);
 t = 0; zed=0;
-while zed<1000
+while zed<2000
     zed = zed+1;
 
     t = t+1;
@@ -372,6 +373,21 @@ while zed<1000
             end
        end
 
+       
+       xm =sum(robot(:,1))/numberOfRobots; 
+       ym =sum(robot(:,2))/numberOfRobots; 
+       for j=1:numberOfObstacles
+           rm = min(rk);
+           if(rm<ra(j))
+               fxvBS = fxvdes + kp*(xm-VirtualBot(1,1))*(1-exp(-Tau*rm));
+               fyvBS = fyvdes + kp*(ym-VirtualBot(1,2))*(1-exp(-Tau*rm));
+           else
+               fxvBS = fxvdes;
+               fyvBS = fyvdes;
+           end
+       end
+       
+       
 
 
         if(abs(fxkBS(i))>FORCE_THRESHOLD)
@@ -405,13 +421,16 @@ while zed<1000
         end
     end
 
-    fx = @(t,x) [x(2); (fxkdes-(Bz+kd)*x(2))/M];
+    
+
+    
+    fx = @(t,x) [x(2); (fxvBS-(Bz+kd)*x(2))/M];
     [T,X]=ode45(fx,[0,0.05],[VirtualBot(1,1);VirtualBotDot(1,1)]);
     [m,z] = size(X);
     VirtualBot(1,1)=real(X(m,1));
     VirtualBotDot(1,1)=real(X(m,2));
 
-    fy = @(t,y) [y(2); (fykdes-(Bz+kd)*y(2))/M];
+    fy = @(t,y) [y(2); (fyvBS-(Bz+kd)*y(2))/M];
     [T,Y]=ode45(fy,[0,0.05],[VirtualBot(1,2);VirtualBotDot(1,2)]);
     [m,z] = size(Y);
     VirtualBot(1,2)=real(Y(m,1));

@@ -30,7 +30,7 @@ end
 numberOfObstacles=1;
 % obstacle = randi([20,80],numberOfObstacles,2);
 % obstacleSize = [randi([3,6],numberOfObstacles,1) randi([4,8],numberOfObstacles,1)];
-obstacle = [15 15];
+obstacle = [18 18];
 obstacleSize = [3 2];
 
 A =  zeros(numberOfObstacles,1);
@@ -250,7 +250,7 @@ end
 
 obstacleFlag = ones(numberOfRobots,1);
 t = 0; zed=0;
-while zed<3500
+while zed<1000
     zed = zed+1;
 
     t = t+1;
@@ -372,6 +372,14 @@ while zed<3500
             end
        end
 
+       for j=1:numberOfObstacles
+           rm = min(rk);
+           if(rm<ra(j))
+               
+           end
+       end
+       
+       
 
 
         if(abs(fxkBS(i))>FORCE_THRESHOLD)
@@ -405,7 +413,10 @@ while zed<3500
         end
     end
 
-    fx = @(t,x) [x(2); (fxkdes-(Bz+kd)*x(2))/M];
+    
+
+    
+    fx = @(t,x) [x(2); (fxvBS-(Bz+kd)*x(2))/M];
     [T,X]=ode45(fx,[0,0.05],[VirtualBot(1,1);VirtualBotDot(1,1)]);
     [m,z] = size(X);
     VirtualBot(1,1)=real(X(m,1));
