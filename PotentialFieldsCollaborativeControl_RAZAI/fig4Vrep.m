@@ -18,7 +18,6 @@ y0 = -1.5;
 v1=1.5; v2=1;
 rectWidth =v1*2;
 rectHeight=v2*2;
-rectangle('Position',[x0-v1 y0-v2 rectWidth rectHeight]);%,'FaceColor',[1 0 0]);
 
 v1=1.5+(0.6/2); v2=1+(0.6/2);
 %Draw a rectangle
@@ -169,28 +168,28 @@ while t<MAX_TIME
         fx = @(t,x) [x(2); (fxkOA(i)-(Bz+kd)*x(2))/M];
         [T,X]=ode45(fx,[0,0.05],[xk;xdot(i)]);
         [m,z] = size(X);
-        xk=X(m,1);
-        xdot(i)=X(m,2);
+        xk=real(X(m,1));
+        xdot(i)=real(X(m,2));
 
         fy = @(t,y) [y(2); (fykOA(i)-(Bz+kd)*y(2))/M];
         [T,Y]=ode45(fy,[0,0.05],[yk;ydot(i)]);
         [m,z] = size(Y);
-        yk=Y(m,1);
-        ydot(i)=Y(m,2);
+        yk=real(Y(m,1));
+        ydot(i)=real(Y(m,2));
         
         % xdot1, ydot1, xdot2, ydot2
         if(i==1)
-            zed(t,1) = xdot(i);
-            zed(t,2) = ydot(i);
+            zed(t,1) = real(xdot(i));
+            zed(t,2) = real(ydot(i));
         end
         if(i==2)
-            zed(t,3) = xdot(i);
-            zed(t,4) = ydot(i);
+            zed(t,3) = real(xdot(i));
+            zed(t,4) = real(ydot(i));
         end
     end
     
     for i=1:numberOfRobots
-        mult = 80;
+        mult = 200;
         if(i==1)
             vX = stopVel+zed(t,1)*mult;
             vY = stopVel+zed(t,2)*mult;
