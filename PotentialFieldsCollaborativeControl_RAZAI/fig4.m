@@ -1,7 +1,7 @@
 clc; clear all; close all; color = 'kbgrcmy'; colorVal=1;
 
 % Generate Random Start Points for Robots
-numberOfRobots=2;
+numberOfRobots=7;
 %robot=cell(1,numberOfRobots+1);
 
 % robot=[ randi(robotX) ...
@@ -21,7 +21,7 @@ figure; hold on; grid on;
 axis([8 35 8 35]); axis square;
 
 for i=1:numberOfRobots
-    circle(robot(i,1),robot(i,2),0.2);
+    circle(robot(i,1),robot(i,2),0.2,2);
 end
 
 % Create Animated Line Objects for Each robot, different colors
@@ -174,5 +174,5 @@ while t<300
 end
 
 for i=1:numberOfRobots
-    circle(robot(i,1),robot(i,2),0.2);
+    circle(robot(i,1),robot(i,2),0.2,4);
 end
