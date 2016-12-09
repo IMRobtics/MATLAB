@@ -86,16 +86,17 @@ FykVST1 = zeros(1,numberOfRobots);
 FxkVSrkra = zeros(1,numberOfRobots);
 FykVSrkra = zeros(1,numberOfRobots);
 
-FORCE_MAX = 100;
+FORCE_MAX = 10;
 FORCE_THRESHOLD = 0.5;
 
 
 % Force on Virtual Bot
-fxvdes = 1;
-fyvdes = 1;
+fxvdes = 8;
+fyvdes = 8;
 
-Tau = 2;
+Tau = 4;
 kp = 5;
+
 
 % movement = ones(numberOfRobots,1);
 % t = 0; zed=0;
@@ -247,9 +248,11 @@ kp = 5;
 %     end
 % end
 
+TIMESTEP = 1;
+
 obstacleFlag = ones(numberOfRobots,1);
 t = 0; zed=0;
-while zed<1000
+while zed<2000
     zed = zed+1;
 
     t = t+1;
@@ -387,24 +390,26 @@ while zed<1000
        
        
 
+        [fxkBS(i),fykBS(i)] = forceConstrain(fxkBS(i),fykBS(i),FORCE_MAX);
 
+        
+        % %============== Solves simple pendulum differential equations =============
+        % deq1=@(t,x) [x(2); -g/l * sin(x(1))]; % Pendulum equations uncoupled
+        % [t,sol] = ode45(deq1,[0 runtime],[initialangle1 initialangle2]);  % uses a numerical ode solver
+        % sol1 = sol(:,1)'; % takes the transpose for plots
+        % sol2 = sol(:,2)';        
+        
         if(abs(fxkBS(i))>FORCE_THRESHOLD)
-            if(abs(fxkBS(i))>FORCE_MAX)
-                fxkBS(i)=(fxkBS(i)/abs(fxkBS(i)))*FORCE_MAX;
-            end
             fx = @(t,x) [x(2); (fxkBS(i)-(Bz+kd)*x(2))/M];
-            [T,X]=ode45(fx,[0,0.05],[xk;xdot(i)]);
+            [T,X]=ode45(fx,[0 TIMESTEP],[xk;xdot(i)]);
             [m,z] = size(X);
             xk=real(X(m,1));
             xdot(i)=real(X(m,2));
         end
 
         if(abs(fykBS(i))>FORCE_THRESHOLD)
-            if(abs(fykBS(i))>FORCE_MAX)
-                fykBS(i)=(fykBS(i)/abs(fykBS(i)))*FORCE_MAX;
-            end
             fy = @(t,y) [y(2); (fykBS(i)-(Bz+kd)*y(2))/M];
-            [T,Y]=ode45(fy,[0,0.05],[yk;ydot(i)]);
+            [T,Y]=ode45(fy,[0 TIMESTEP],[yk;ydot(i)]);
             [m,z] = size(Y);
             yk=real(Y(m,1));
             ydot(i)=real(Y(m,2));
@@ -421,15 +426,16 @@ while zed<1000
 
     
 
-    
+    [fxvBS,fyvBS] = forceConstrain(fxvBS,fyvBS,FORCE_MAX);
+
     fx = @(t,x) [x(2); (fxvBS-(Bz+kd)*x(2))/M];
-    [T,X]=ode45(fx,[0,0.05],[VirtualBot(1,1);VirtualBotDot(1,1)]);
+    [T,X]=ode45(fx,[0 TIMESTEP],[VirtualBot(1,1);VirtualBotDot(1,1)]);
     [m,z] = size(X);
     VirtualBot(1,1)=real(X(m,1));
     VirtualBotDot(1,1)=real(X(m,2));
 
     fy = @(t,y) [y(2); (fyvBS-(Bz+kd)*y(2))/M];
-    [T,Y]=ode45(fy,[0,0.05],[VirtualBot(1,2);VirtualBotDot(1,2)]);
+    [T,Y]=ode45(fy,[0 TIMESTEP],[VirtualBot(1,2);VirtualBotDot(1,2)]);
     [m,z] = size(Y);
     VirtualBot(1,2)=real(Y(m,1));
     VirtualBotDot(1,2)=real(Y(m,2)); 
