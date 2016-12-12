@@ -2,13 +2,15 @@ clc; clear all; close all; color = 'kbgrcmy'; colorVal=1;
 figure; hold on; grid on;
 axis([10 55 10 55]); axis square;
 
+pause
+
 TIMESTEP = 0.01;
 TOTALTIME = 50;
 
 numberOfRobots=4;
 robot=[ ([14,19])
         ([16,16])
-        ([19,17])
+        ([18,17])
         ([18,22])
         ];
 robotT1 = robot;
@@ -30,7 +32,7 @@ end
 numberOfObstacles=1;
 % obstacle = randi([20,80],numberOfObstacles,2);
 % obstacleSize = [randi([3,6],numberOfObstacles,1) randi([4,8],numberOfObstacles,1)];
-obstacle = [25 25];
+obstacle = [30 30];
 obstacleSize = [4 3];
 
 A =  zeros(numberOfObstacles,1);
@@ -88,16 +90,16 @@ FykVST1 = zeros(1,numberOfRobots);
 FxkVSrkra = zeros(1,numberOfRobots);
 FykVSrkra = zeros(1,numberOfRobots);
 
-FORCE_MAX = 100;
+FORCE_MAX = 10;
 FORCE_THRESHOLD = 0.1;
 
 
 % Force on Virtual Bot
-fxvdes = 8;
-fyvdes = 8;
+fxvdes = 6;
+fyvdes = 6;
 
 Tau = 4;
-kp = 5;
+kp = 1;
 
 obstacleFlag = ones(numberOfRobots,1);
 zed=0;
@@ -255,6 +257,7 @@ while zed<(TOTALTIME/TIMESTEP)
         robot(i,:)=[xk(end) yk(end)];
         addpoints(robotTrajectory(i),xk(end),yk(end));
         if(mod(zed,(TOTALTIME/TIMESTEP)/50)==0)
+            zed
             drawnow
         end
     end
@@ -278,8 +281,6 @@ while zed<(TOTALTIME/TIMESTEP)
 %         circle(VirtualBot(1,1),VirtualBot(1,2),alpha,0.5);
         circle(VirtualBot(1,1),VirtualBot(1,2),0.2,1);
         border(robot(1:numberOfRobots,1),robot(1:numberOfRobots,2)); 
-        zed
         drawnow
-    end  
-    
+    end
 end
