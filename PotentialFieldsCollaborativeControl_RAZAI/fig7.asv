@@ -1,45 +1,64 @@
 clc; clear all; clear global; clear variables; close all;
 color = 'kbgrcmy'; colorVal = 1;
 figure; hold on; grid on;
-axis([10 55 10 55]); axis square;
+axis square;
 
-TIMESTEP = 0.1;
+TIMESTEP = 0.05;
 TOTALTIME = 50;
-DRAWCOUNT = 20;
+DRAWCOUNT = 10;
 
+FORCE_MAX = 20;
+FORCE_MIN_THRESHOLD = 0;
+
+obstacle = ([25,25]);
+obstacleSize = ([4,3]);
+ra = 1;
+kp = 10;
+Tau = 4;
+
+axis([0 50 -20 30]);
 numberOfRobots = 4;
-robot = [([15,20])
-         ([15,17.5])
-         ([17.5,15])
-         ([20,15])
+robot = [([5, 5])
+         ([2, 4])
+         ([4, 4])
+         ([5, 1])
         ];
 robotT1 = robot;
 robotDot = zeros(numberOfRobots,2);
-
-VirtualBot = [20,20];
-VirtualBotDot = [0,0];
-
-obstacle = ([30,41]);
-obstacleSize = ([4,3]);
-ra = 1;
-Tau = 4;
-kp = 1;
-
 M = 1;
 Bz = 1;
 kd = 9;
-ksk = 1;
-kr = 0.15;
+ksk = 100;
+kr = 10;
 alpha = 3;
 qk = 10;
 q(1:numberOfRobots) = qk;
 m(1:numberOfRobots) = M;
 
-fxvdes = 8;
-fyvdes = 8;
+VirtualBot = [5,5];
+VirtualBotDot = [0,0];
 
-FORCE_MAX = 100;
-FORCE_MIN_THRESHOLD = 0.05;
+
+fprintf('Scenarios mentioned in the Paper\n\n')
+scenario = input('Press 1, 2 or 3 and hit Enter.');
+
+if(scenario==1 || scenario==2)
+    fxvdes = 8;
+    fyvdes = 8*sin((1/4)*VirtualBot(1,1));
+
+    FORCE_MAX = 20;
+elseif scenario==3
+    obstacle = ([25,25]);
+    obstacleSize = ([4,3]);
+    ra = 1;
+    kp = 10;
+    Tau = 4;
+    fxvdes = 8;
+    fyvdes = 8;
+
+else
+    return
+end
 
 % for graphing and plotting
 for i = 1:numberOfRobots
@@ -99,7 +118,39 @@ while zed<(TOTALTIME/TIMESTEP)
         a = obstacle(1,:)-robot(i,:);
         rk(i) = sqrt(((A^2*a(1)^2+B^2*a(2)^2-1)));
 
-        if(rk(i)> ra)
+        if(rk(i)<= ra)
+            chi = atan2(a(2),a(1));
+            psi = atan2(robot(i,2)-robotT1(i,2),robot(i,1)-robotT1(i,1));            
+            if(mod(psi-chi,2*pi)<=pi)
+                Fxkrc  =  (B/A)*(robot(i,2)-obstacle(1,2));
+                Fykrc  = -(A/B)*(robot(i,1)-obstacle(1,1));
+                Fxkr   = Fxkrc;
+                Fykr   = Fykrc;
+            else
+                Fxkrcc = -(B/A)*(robot(i,2)-obstacle(1,2));
+                Fykrcc =  (A/B)*(robot(i,1)-obstacle(1,1));
+                Fxkr   = Fxkrcc;
+                Fykr   = Fykrcc;
+            end
+
+            Fxkrn = Fxkr/norm([Fxkr;Fykr]);
+            Fykrn = Fykr/norm([Fxkr;Fykr]);
+            
+            % To check if this (ith) robot has reached near obstacle before
+            % If the robot is reaching for the first time, near obstacle
+            % The FxkVSrkra is set to the previosu force.
+            if(obstacleFlag(i)==0)
+                FxkVSrkra(i) = FxkVST1(i);
+                FykVSrkra(i) = FykVST1(i);
+                obstacleFlag(i)=1;
+            end
+            % second part of eq 22, 
+            FxkObs(i) = ((g(FxkVSrkra(i),FykVSrkra(i))*Fxkrn)/rk(i)^2)*((1/rk(i))-(1/ra));
+            FykObs(i) = ((g(FxkVSrkra(i),FykVSrkra(i))*Fykrn)/rk(i)^2)*((1/rk(i))-(1/ra));
+            
+            FxkBS(i) = FxkVSrkra(i) + FxkObs(i);
+            FykBS(i) = FykVSrkra(i) + FykObs(i);
+        else
             for j = 1:numberOfRobots
                 if i == j
                     r(i,j) = 0;
@@ -136,40 +187,7 @@ while zed<(TOTALTIME/TIMESTEP)
             if(obstacleFlag(i)==1)
                 obstacleFlag(i)=2;
             end
-        else
-            chi = atan2(a(2),a(1));
-            psi = atan2(robot(i,2)-robotT1(i,2),robot(i,1)-robotT1(i,1));            
-                        
-            if(mod(psi-chi,2*pi)<= pi)
-                Fxkrc =  (B/A)*a(2);
-                Fykrc = -(A/B)*a(1);
-                Fxkr = Fxkrc;
-                Fykr = Fykrc;
-            else
-                Fxkrcc = -(B/A)*a(2);
-                Fykrcc =  (A/B)*a(1);
-                Fxkr = Fxkrcc;
-                Fykr = Fykrcc;
-            end
-            
-            Fxkrn = Fxkr/norm([Fxkr;Fykr]);
-            Fykrn = Fykr/norm([Fxkr;Fykr]);
-            
-            % To check if this (ith) robot has reached near obstacle before
-            % If the robot is reaching for the first time, near obstacle
-            % The FxkVSrkra is set to the previosu force.
-            if(obstacleFlag(i)==0)
-                FxkVSrkra(i) = FxkVST1(i);
-                FykVSrkra(i) = FykVST1(i);
-                obstacleFlag(i)=1;
-            end
-            % second part of eq 22, 
-            FxkObs(i) = ((g(FxkVSrkra(i),FykVSrkra(i))*Fxkrn)/rk(i)^2)*((1/rk(i))-(1/ra));
-            FykObs(i) = ((g(FxkVSrkra(i),FykVSrkra(i))*Fykrn)/rk(i)^2)*((1/rk(i))-(1/ra));
-            
-            FxkBS(i) = FxkVSrkra(i) + FxkObs(i);
-            FykBS(i) = FykVSrkra(i) + FykObs(i);
-        end        
+        end
     end
     
     % Feedback Force for Virtual Robot
@@ -178,6 +196,9 @@ while zed<(TOTALTIME/TIMESTEP)
     xm = sum(robot(:,1))/numberOfRobots; 
     ym = sum(robot(:,2))/numberOfRobots; 
     rm = min(rk);
+    if(scenario==1 || scenario==2)
+        fyvdes = 8*sin((1/4)*VirtualBot(1,1));
+    end
     if(rm<=ra)
         fxvBS = fxvdes + kp*(xm-VirtualBot(1,1))*(1-exp(-Tau*rm));
         fyvBS = fyvdes + kp*(ym-VirtualBot(1,2))*(1-exp(-Tau*rm));
@@ -225,8 +246,13 @@ while zed<(TOTALTIME/TIMESTEP)
     if(mod(zed,(TOTALTIME/TIMESTEP)/DRAWCOUNT) == 0)
         % circle(VirtualBot(1,1),VirtualBot(1,2),alpha,0.5);
         circle(VirtualBot(1,1),VirtualBot(1,2),0.2,1);
-        border(robot(1:numberOfRobots,1),robot(1:numberOfRobots,2));
+        if(sum(obstacleFlag)==0 || sum(obstacleFlag)==(2*numberOfRobots)) 
+            border(robot(1:numberOfRobots,1),robot(1:numberOfRobots,2));
+        end
         zed*TIMESTEP;
         drawnow
     end
+   if(scenario==2 && zed*TIMESTEP>25)
+       numberOfRobots = 3;
+   end
 end
