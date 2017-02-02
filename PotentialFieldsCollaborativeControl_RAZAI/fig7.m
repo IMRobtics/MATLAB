@@ -1,45 +1,61 @@
 clc; clear all; clear global; clear variables; close all;
 color = 'kbgrcmy'; colorVal = 1;
 figure; hold on; grid on;
-axis([10 55 10 55]); axis square;
+axis square;
 
-TIMESTEP = 0.1;
-TOTALTIME = 30;
-DRAWCOUNT = 10;
+TIMESTEP = 0.05;
+TOTALTIME = 50;
+DRAWCOUNT = 10+1;
+
+FORCE_MAX = 20;
+FORCE_MIN_THRESHOLD = 0;
+
+obstacle = ([25,25]);
+obstacleSize = ([4,3]);
+ra = 1;
+kp = 10;
+Tau = 4;
 
 numberOfRobots = 4;
-robot = [([15,20])
-         ([15,17.5])
-         ([17.5,15])
-         ([20,15])
+robot = [([5, 5])
+         ([2, 4])
+         ([4, 4])
+         ([5, 1])
         ];
 robotT1 = robot;
 robotDot = zeros(numberOfRobots,2);
-
-VirtualBot = [20,20];
-VirtualBotDot = [0,0];
-
-obstacle = ([30,30]);
-obstacleSize = ([4,3]);
-ra = 1;
-Tau = 4;
-kp = 1;
-
 M = 1;
 Bz = 1;
 kd = 9;
-ksk = 1;
-kr = 0.15;
+ksk = 100;
+kr = 10;
 alpha = 3;
 qk = 10;
 q(1:numberOfRobots) = qk;
 m(1:numberOfRobots) = M;
 
-fxvdes = 8;
-fyvdes = 8;
+VirtualBot = [5,5];
+VirtualBotDot = [0,0];
 
-FORCE_MAX = 100;
-FORCE_MIN_THRESHOLD = 0.01;
+fprintf('Scenarios mentioned in the Paper\n')
+scenario = input('Press 1, 2 or 3 and hit Enter: ');
+
+if(scenario==1 || scenario==2)
+    axis([0 50 -20 30]);
+    fxvdes = 8;
+    fyvdes = 8*sin((1/4)*VirtualBot(1,1));
+elseif scenario==3
+    axis([10 55 10 55]);
+    obstacle = ([25,25]);
+    obstacleSize = ([4,3]);
+    ra = 1;
+    kp = 10;
+    Tau = 4;
+    fxvdes = 8;
+    fyvdes = 8;
+else
+    return
+end
 
 % for graphing and plotting
 for i = 1:numberOfRobots
@@ -59,10 +75,13 @@ VirtualTrajectory = animatedline('Color','r','LineWidth',1,'LineStyle','-.');
 
 v1 = obstacleSize(1,1);
 v2 = obstacleSize(1,2);
-rectangle('Position',[obstacle(1,1)-v1 obstacle(1,2)-v2 v1*2 v2*2]);
 A = sqrt(1/(2*((v1)^2)));
 B = sqrt(1/(2*((v2)^2)));
-ellipse(obstacle(1,1),obstacle(1,2),1/A,1/B);
+
+if(scenario==3)
+    rectangle('Position',[obstacle(1,1)-v1 obstacle(1,2)-v2 v1*2 v2*2]);
+    ellipse(obstacle(1,1),obstacle(1,2),1/A,1/B);
+end
 
 obstacleFlag = zeros(1,numberOfRobots);
 FxkVST1 = zeros(1,numberOfRobots);
@@ -177,6 +196,9 @@ while zed<(TOTALTIME/TIMESTEP)
     xm = sum(robot(:,1))/numberOfRobots; 
     ym = sum(robot(:,2))/numberOfRobots; 
     rm = min(rk);
+    if(scenario==1 || scenario==2)
+        fyvdes = 8*sin((1/4)*VirtualBot(1,1));
+    end
     if(rm<=ra)
         fxvBS = fxvdes + kp*(xm-VirtualBot(1,1))*(1-exp(-Tau*rm));
         fyvBS = fyvdes + kp*(ym-VirtualBot(1,2))*(1-exp(-Tau*rm));
@@ -190,7 +212,7 @@ while zed<(TOTALTIME/TIMESTEP)
         [FxkBS(i),FykBS(i)] = forceConstrain(FxkBS(i),FykBS(i),FORCE_MAX);
         if(abs(FxkBS(i))>FORCE_MIN_THRESHOLD)
             fx = @(t,x) [x(2); (FxkBS(i)-(Bz+kd)*x(2))/M];
-            [T,X] = ode45(fx,[0 TIMESTEP],[robot(i,1);robotDot(i,1)]);
+            [T,X] = ode45(fx,0:TIMESTEP/10:TIMESTEP,[robot(i,1);robotDot(i,1)]);
             robotT1(i,1) = robot(i,1);
             robot(i,1) = real(X(end,1));
             robotDot(i,1) = real(X(end,2));
@@ -198,35 +220,44 @@ while zed<(TOTALTIME/TIMESTEP)
         
         if(abs(FykBS(i))>FORCE_MIN_THRESHOLD)
             fy = @(t,y) [y(2); (FykBS(i)-(Bz+kd)*y(2))/M];
-            [T,Y] = ode45(fy,[0 TIMESTEP],[robot(i,2);robotDot(i,2)]);
+            [T,Y] = ode45(fy,0:TIMESTEP/10:TIMESTEP,[robot(i,2);robotDot(i,2)]);
             robotT1(i,2) = robot(i,2);
             robot(i,2) = real(Y(end,1));
             robotDot(i,2) = real(Y(end,2));
         end
-        addpoints(robotTrajectory(i),robot(i,1),robot(i,2));
+        if(scenario==3)
+            addpoints(robotTrajectory(i),real(X(1:end-1,1)),real(Y(1:end-1,1)));
+            addpoints(robotTrajectory(i),robot(i,1),robot(i,2));
+        end
     end
     
     [fxvBS,fyvBS] = forceConstrain(fxvBS,fyvBS,FORCE_MAX);
     if(abs(fxvBS)>FORCE_MIN_THRESHOLD)
         fx = @(t,x) [x(2); (fxvBS-(Bz+kd)*x(2))/M];
-        [T,X] = ode45(fx,[0 TIMESTEP],[VirtualBot(1,1);VirtualBotDot(1,1)]);
+        [T,X] = ode45(fx,0:TIMESTEP/10:TIMESTEP,[VirtualBot(1,1);VirtualBotDot(1,1)]);
         VirtualBot(1,1) = real(X(end,1));
         VirtualBotDot(1,1) = real(X(end,2));
     end
     if(abs(fyvBS)>FORCE_MIN_THRESHOLD)
         fy = @(t,y) [y(2); (fyvBS-(Bz+kd)*y(2))/M];
-        [T,Y] = ode45(fy,[0 TIMESTEP],[VirtualBot(1,2);VirtualBotDot(1,2)]);
+        [T,Y] = ode45(fy,0:TIMESTEP/10:TIMESTEP,[VirtualBot(1,2);VirtualBotDot(1,2)]);
         VirtualBot(1,2) = real(Y(end,1));
         VirtualBotDot(1,2) = real(Y(end,2));
     end
+%     addpoints(VirtualTrajectory,real(X(1:end-1,1)), real(Y(1:end-1,1)));
     addpoints(VirtualTrajectory,VirtualBot(1,1), VirtualBot(1,2));
     
-    if(mod(zed,(TOTALTIME/TIMESTEP)/DRAWCOUNT) == 0)
+    if(mod(zed,round((TOTALTIME/TIMESTEP)/DRAWCOUNT)) == 0)
         % circle(VirtualBot(1,1),VirtualBot(1,2),alpha,0.5);
         circle(VirtualBot(1,1),VirtualBot(1,2),0.2,1);
-            border(robot(1:numberOfRobots,1),robot(1:numberOfRobots,2));
+        for i = 1:numberOfRobots
+            circle(robot(i,1),robot(i,2),0.2,2);
         end
+        border(robot(1:numberOfRobots,1),robot(1:numberOfRobots,2));
         zed*TIMESTEP;
         drawnow
     end
+   if(scenario==2 && zed*TIMESTEP>25)
+       numberOfRobots = 3;
+   end
 end

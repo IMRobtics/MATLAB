@@ -1,4 +1,4 @@
-; clear all; close all; color = 'kbgrcmy'; colorVal=1;
+clear all; close all; color = 'kbgrcmy'; colorVal=1;
 figure;
 hold on; grid on;
 FLOORSIZE = 7.5; % in meters HALF
